@@ -16,8 +16,16 @@ class ShapeDetector:
         _,self.img_binary = cv2.threshold(self.img_gray, 110, 255, cv2.THRESH_BINARY)
         self.contours = None
         # On result image we'll highlight every kind of figure in some color
-        # 1 - ellipses, 2 - circles, 0 - other unclassified figures
-        self.colors = {0: (0, 0, 255), 1: (255, 0, 0), 2: (0, 255, 0)}
+        # 1 - ellipses, 2 - circles, 3 - triangles, -1 - squares, -2 - rectangles,
+        # 0 - other unclassified figures
+        self.colors = {
+            -2: (66, 81, 245),
+            -1: (66, 150, 245),
+             0: (66, 233, 245),
+             1: (66, 245, 170),
+             2: (138, 245, 66),
+             3: (245, 212, 66)
+        }
 
     def show_image(self):
         cv2.imshow('Output', self.img)
@@ -46,9 +54,18 @@ class ShapeDetector:
         # If passed vertices present polygon, that too close
         # to some ellipse - return 1, if it circle - return 2
         polygon = Polygon(verticies)
+        # If triangle - contour_type is 3
+        if polygon.is_triangle():
+            return 3
+        # If rectangle - contour_type is -2, square — -1
+        is_rectangle = polygon.is_rectangle()
+        if is_rectangle:
+            return is_rectangle
+        # ellipse - 1, circle - 2
         is_ellipse = polygon.is_ellipse()
         if is_ellipse:
             return is_ellipse
+        # Other - contour type is zero
         return 0
 
 

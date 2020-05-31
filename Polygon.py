@@ -17,6 +17,24 @@ class Polygon:
         p2 = (p2[0], p2[1])
         return (p1[0] - p2[0])**2 + (p1[1] - p2[1])**2
 
+    # Return True if polygon is trianlge
+    def is_triangle(self):
+        return self.point_count == 3
+
+    # Return -2 if rectangle, -1 if square, 0 else
+    def is_rectangle(self, epsilon = 0.01):
+        if self.point_count == 4:
+            d1 = self.distance(0,1)
+            d2 = self.distance(0,2)
+            d3 = self.distance(0,3)
+            d1, d3, summ = min(d1,d2,d3), max(d1,d2,d3), d1+d2+d3
+            d2 = summ - d1 - d3
+            if abs((d1 + d2 - d3)/d3) <= epsilon:
+                if abs((d1 - d2)/d2) <= epsilon:
+                    return -1
+                return -2
+        return 0
+
     def is_convex(self):
         # Every triangle always is convex
         if self.point_count == 3:
