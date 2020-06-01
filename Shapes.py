@@ -42,7 +42,7 @@ class ShapeDetector:
             method=cv2.CHAIN_APPROX_SIMPLE
         )
 
-    def draw_contours(self):
+    def process(self):
         if not self.contours:
             self.find_contours()
         # Searching through every region selected to
@@ -53,8 +53,12 @@ class ShapeDetector:
             perimeter = cv2.arcLength(cnt,True)
             # approximation by polygon
             approx_polygon = cv2.approxPolyDP(cnt, 0.009 * perimeter, closed = True)
-            contour_type = self.analyze_polygon(approx_polygon, area, perimeter)
-            color = self.colors[contour_type]
+            contour_info = self.analyze_polygon(approx_polygon, area, perimeter)
+            # If contour is a chain or period - we also receive it length
+            if contour_info[0] <= -3:
+                contour_length = contour_info[1]
+            # Highlighting contour
+            color = self.colors[contour_info[0]]
             cv2.drawContours(self.img, [approx_polygon], 0, color, 3)
                     
     def analyze_polygon(self, verticies, area, perimeter):
@@ -62,24 +66,25 @@ class ShapeDetector:
         # to some ellipse - return 1, if it circle - return 2
         polygon = Polygon(verticies, area, perimeter)
         # Check if contour is close to chain or period
-        is_chain, is_period = polygon.is_chain()
+        # If thats it - we also receive length as 3rd argument
+        is_chain, is_period, length = polygon.is_chain()
         if is_period:
-            return -4
+            return -4, length
         if is_chain:
-            return -3
+            return -3, length
         # If triangle - contour_type is 3
         if polygon.is_triangle():
-            return 3
+            return (3, None)
         # If rectangle - contour_type is -2, square — -1
         is_rectangle = polygon.is_rectangle()
         if is_rectangle:
-            return is_rectangle
+            return (is_rectangle, None)
         # ellipse - 1, circle - 2
         is_ellipse = polygon.is_ellipse()
         if is_ellipse:
-            return is_ellipse
+            return (is_ellipse, None)
         # Other - contour type is zero
-        return 0
+        return (0, None)
 
 
 if __name__ == "__main__":
@@ -87,7 +92,7 @@ if __name__ == "__main__":
     shape_detector = ShapeDetector(img_path)
 
     # Recognition operations
-    shape_detector.draw_contours()
+    shape_detector.process()
 
     # Displaying result
     shape_detector.show_image()

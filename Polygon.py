@@ -22,11 +22,20 @@ class Polygon:
 
     # Return bool vector ("polygon is chain?", "polygon is a period")
     def is_chain(self, thickness = 4):
-        is_chain = (self.area/self.perimeter)< thickness
+        length = None
+        is_chain = (self.area/self.perimeter) < thickness
         is_period = False
         if is_chain and (self.point_count == 2):
             is_period = True
-        return is_chain, is_period
+            length = self.distance(0,1)**0.5
+        # If polygon is actually chain
+        if is_chain and not is_period:
+            length = 0
+            # It length = sum of length of segments
+            for i in range(self.point_count):
+                length += (self.distance(i, (i+1)%self.point_count))**(0.5)
+            length = length/2
+        return is_chain, is_period, length
 
     # Return True if polygon is trianlge
     def is_triangle(self):
