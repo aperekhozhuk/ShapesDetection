@@ -17,8 +17,11 @@ class ShapeDetector:
         self.contours = None
         # On result image we'll highlight every kind of figure in some color
         # 1 - ellipses, 2 - circles, 3 - triangles, -1 - squares, -2 - rectangles,
+        # -3 - chains, -4 periods
         # 0 - other unclassified figures
         self.colors = {
+            -4: (121, 50, 168),
+            -3: (9, 9, 235),
             -2: (66, 81, 245),
             -1: (66, 150, 245),
              0: (66, 233, 245),
@@ -45,15 +48,25 @@ class ShapeDetector:
         # Searching through every region selected to
         # find the required polygon
         for i, cnt in enumerate(self.contours) :
-            approx_polygon = cv2.approxPolyDP(cnt, 0.009 * cv2.arcLength(cnt, True), closed = True)
-            contour_type = self.analyze_polygon(approx_polygon)
+            # calculate area and perimeter of countour
+            area = cv2.contourArea(cnt)
+            perimeter = cv2.arcLength(cnt,True)
+            # approximation by polygon
+            approx_polygon = cv2.approxPolyDP(cnt, 0.009 * perimeter, closed = True)
+            contour_type = self.analyze_polygon(approx_polygon, area, perimeter)
             color = self.colors[contour_type]
             cv2.drawContours(self.img, [approx_polygon], 0, color, 3)
                     
-    def analyze_polygon(self, verticies):
+    def analyze_polygon(self, verticies, area, perimeter):
         # If passed vertices present polygon, that too close
         # to some ellipse - return 1, if it circle - return 2
-        polygon = Polygon(verticies)
+        polygon = Polygon(verticies, area, perimeter)
+        # Check if contour is close to chain or period
+        is_chain, is_period = polygon.is_chain()
+        if is_period:
+            return -4
+        if is_chain:
+            return -3
         # If triangle - contour_type is 3
         if polygon.is_triangle():
             return 3

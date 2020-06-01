@@ -2,8 +2,11 @@ import numpy as np
 
 class Polygon:
 
-    def __init__(self, vertices):
+    def __init__(self, vertices, area, perimeter):
         self.point_count = len(vertices)
+        # Here we receive accurate area and perimeter of contour
+        self.area = area
+        self.perimeter = perimeter
         # convert np.ndarray to np.array for easier accessing
         self.vertices = np.empty((self.point_count,2), dtype = np.int32)
         for i, x in enumerate(vertices):
@@ -16,6 +19,14 @@ class Polygon:
         p2 = self.vertices[j]
         p2 = (p2[0], p2[1])
         return (p1[0] - p2[0])**2 + (p1[1] - p2[1])**2
+
+    # Return bool vector ("polygon is chain?", "polygon is a period")
+    def is_chain(self, thickness = 4):
+        is_chain = (self.area/self.perimeter)< thickness
+        is_period = False
+        if is_chain and (self.point_count == 2):
+            is_period = True
+        return is_chain, is_period
 
     # Return True if polygon is trianlge
     def is_triangle(self):
