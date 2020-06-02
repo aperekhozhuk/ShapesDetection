@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import sys
 from Polygon import Polygon
 
 class ShapeDetector:
@@ -43,7 +44,7 @@ class ShapeDetector:
             method=cv2.CHAIN_APPROX_SIMPLE
         )
 
-    def process(self):
+    def process(self, min_length, min_area):
         if not self.contours:
             self.find_contours()
         # Searching through every region selected to
@@ -58,6 +59,11 @@ class ShapeDetector:
             # If contour is a chain or period - we also receive it length
             if contour_info[0] <= -3:
                 contour_length = contour_info[1]
+                if contour_length < min_length:
+                    continue
+            else:
+                if area < min_area:
+                    continue
             # Highlighting contour
             color = self.colors[contour_info[0]]
             cv2.drawContours(self.img, [approx_polygon], 0, color, 3)
@@ -89,11 +95,26 @@ class ShapeDetector:
 
 
 if __name__ == "__main__":
+    # filters: minLength - for chains and periods,
+    # minArea - for circles, ellipses and polygons
+    min_length = 0
+    min_area = 0
     img_path = 'blob.jpg'
-    shape_detector = ShapeDetector(img_path)
+    # Receiving command-line arguments for overwrite defaults
+    args = sys.argv
+    args_cnt = len(args)
+    if args_cnt > 1:
+        if args_cnt > 4:
+            print("Bad arguments")
+            exit(1)
+        if args_cnt >= 3:
+            min_length, min_area = int(args[1]), int(args[2])
+        if args_cnt in [2,4]:
+            img_path = args[args_cnt - 1]
 
+    shape_detector = ShapeDetector(img_path)
     # Recognition operations
-    shape_detector.process()
+    shape_detector.process(min_length, min_area)
 
     # Displaying result
     shape_detector.show_image()
