@@ -81,6 +81,7 @@ class Polygon:
 
     # If circle - return 2, ellipse - 1, else - 0
     def is_ellipse(self, epsilon = 0.05):
+        # Not convex figures we mark as Zero contour type
         if not self.is_convex():
             return 0
         # Let's find supposed poles
@@ -118,7 +119,9 @@ class Polygon:
         for v in self.vertices:
             v = (v[0] - center[0], v[1] - center[1])
             if abs((v[0]/A)**2 + (v[1]/B)**2 - 1) > epsilon:
-                return 0
+                # We find that contour is not ellipse, so let's return 4
+                # It mean, that figure just convex
+                return 4
         # If semi axeses too close - we can decide that its a circle
         if abs(A - B) < 1:
             return 2

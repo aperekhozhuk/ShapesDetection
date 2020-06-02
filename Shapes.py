@@ -17,7 +17,7 @@ class ShapeDetector:
         self.contours = None
         # On result image we'll highlight every kind of figure in some color
         # 1 - ellipses, 2 - circles, 3 - triangles, -1 - squares, -2 - rectangles,
-        # -3 - chains, -4 periods
+        # -3 - chains, -4 periods, 4 - convex polygons (> 4 vertices)
         # 0 - other unclassified figures
         self.colors = {
             -4: (121, 50, 168),
@@ -27,7 +27,8 @@ class ShapeDetector:
              0: (66, 233, 245),
              1: (66, 245, 170),
              2: (138, 245, 66),
-             3: (245, 212, 66)
+             3: (245, 212, 66),
+             4: (227, 20, 55)
         }
 
     def show_image(self):
